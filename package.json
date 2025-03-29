@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.4",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.49.3",
     "@tiptap/extension-image": "^2.11.6",
@@ -21,7 +22,9 @@
     "@tiptap/react": "^2.11.6",
     "@tiptap/starter-kit": "^2.11.6",
     "clsx": "^2.1.0",
+    "form-data": "^4.0.2",
     "gray-matter": "^4.0.3",
+    "mailgun.js": "^12.0.1",
     "next": "14.0.4",
     "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
@@ -38,8 +41,8 @@
     "@eslint/eslintrc": "latest",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^15.0.0",
-    "@types/jest": "^29.5.14",
+    "@testing-library/react": "^14.2.1",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

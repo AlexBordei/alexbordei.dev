@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { FiGithub, FiLinkedin, FiYoutube } from 'react-icons/fi';
-import { SiTiktok } from 'react-icons/si';
+import { SiTiktok, SiX } from 'react-icons/si';
 
 export default function Footer() {
   return (
@@ -69,6 +69,16 @@ export default function Footer() {
                 <span className="sr-only">LinkedIn</span>
               </a>
               <a
+                href="https://x.com/abordei"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                aria-label="X (Twitter)"
+              >
+                <SiX className="h-5 w-5" />
+                <span className="sr-only">X (Twitter)</span>
+              </a>
+              <a
                 href="https://youtube.com/@alexbordei"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -79,7 +89,7 @@ export default function Footer() {
                 <span className="sr-only">YouTube</span>
               </a>
               <a
-                href="https://tiktok.com/@alexbordei"
+                href="https://tiktok.com/@alexandrubordei3"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"

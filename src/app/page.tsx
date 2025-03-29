@@ -32,6 +32,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     async function fetchData() {
@@ -56,15 +57,29 @@ export default function Home() {
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubscribeStatus('loading');
+    setErrorMessage('');
 
     try {
-      // TODO: Implement newsletter subscription
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
       setSubscribeStatus('success');
       setEmail('');
     } catch (error) {
       console.error('Error subscribing:', error);
       setSubscribeStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to subscribe');
     }
   };
 
@@ -294,7 +309,7 @@ export default function Home() {
             )}
             {subscribeStatus === 'error' && (
               <p className="mt-4 text-red-600 dark:text-red-400">
-                Oops! Something went wrong. Please try again.
+                {errorMessage || 'Oops! Something went wrong. Please try again.'}
               </p>
             )}
           </div>

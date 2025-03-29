@@ -8,25 +8,52 @@ import { type BlogPost, type BlogCategory } from '@/lib/supabase';
 import { RichTextEditor } from '@/components/blog/RichTextEditor';
 import { supabase } from '@/lib/supabase';
 
-interface EditPostPageProps {
-  params: {
-    id: string;
-  };
-  post: BlogPost;
-  categories: BlogCategory[];
-}
-
-export default function EditPost({ params, post: initialPost, categories }: EditPostPageProps) {
+export default function EditPost({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [title, setTitle] = useState(initialPost.title);
-  const [slug, setSlug] = useState(initialPost.slug);
-  const [excerpt, setExcerpt] = useState(initialPost.excerpt);
-  const [content, setContent] = useState(initialPost.content);
-  const [categoryId, setCategoryId] = useState(initialPost.category_id.toString());
-  const [tags, setTags] = useState(initialPost.tags.join(', '));
-  const [status, setStatus] = useState<'draft' | 'published'>(initialPost.status);
-  const [featuredImage, setFeaturedImage] = useState<string | null>(initialPost.featured_image || null);
+  const [loading, setLoading] = useState(true);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [content, setContent] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [tags, setTags] = useState('');
+  const [status, setStatus] = useState<'draft' | 'published'>('draft');
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [postData, categoriesData] = await Promise.all([
+          blogService.getPost(parseInt(params.id)),
+          blogService.getCategories()
+        ]);
+
+        if (postData) {
+          setPost(postData);
+          setTitle(postData.title);
+          setSlug(postData.slug);
+          setExcerpt(postData.excerpt || '');
+          setContent(postData.content);
+          setCategoryId(postData.category_id?.toString() || '');
+          setTags(postData.tags?.join(', ') || '');
+          setStatus(postData.status);
+          setFeaturedImage(postData.featured_image);
+        }
+
+        setCategories(categoriesData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to load post data');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

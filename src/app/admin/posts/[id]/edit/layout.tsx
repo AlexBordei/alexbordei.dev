@@ -1,5 +1,3 @@
-import { notFound } from 'next/navigation';
-import { blogService } from '@/lib/services/blog';
 import EditPost from './page';
 
 interface EditPostLayoutProps {
@@ -8,15 +6,6 @@ interface EditPostLayoutProps {
   };
 }
 
-export default async function EditPostLayout({ params }: EditPostLayoutProps) {
-  const [post, categories] = await Promise.all([
-    blogService.getPost(parseInt(params.id)),
-    blogService.getCategories()
-  ]);
-
-  if (!post) {
-    notFound();
-  }
-
-  return <EditPost params={params} post={post} categories={categories} />;
+export default function EditPostLayout({ params }: EditPostLayoutProps) {
+  return <EditPost params={params} />;
 } 

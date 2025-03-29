@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiUpload } from 'react-icons/fi';
 import { blogService } from '@/lib/services/blog';
@@ -8,12 +8,10 @@ import { type BlogCategory } from '@/lib/supabase';
 import { RichTextEditor } from '@/components/blog/RichTextEditor';
 import { supabase } from '@/lib/supabase';
 
-interface NewPostPageProps {
-  categories: BlogCategory[];
-}
-
-export default function NewPost({ categories }: NewPostPageProps) {
+export default function NewPost() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
@@ -23,6 +21,22 @@ export default function NewPost({ categories }: NewPostPageProps) {
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesData = await blogService.getCategories();
+        setCategories(categoriesData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setError('Failed to load categories');
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
