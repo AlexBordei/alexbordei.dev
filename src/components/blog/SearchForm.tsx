@@ -10,6 +10,7 @@ interface SearchFormProps {
   categories: (BlogCategory & { post_count: number })[];
   onSearch: (search: string) => void;
   onCategory: (category: string) => void;
+  placeholder?: string;
 }
 
 function SearchFormComponent({ 
@@ -17,7 +18,8 @@ function SearchFormComponent({
   initialCategory = '', 
   categories,
   onSearch,
-  onCategory 
+  onCategory,
+  placeholder = 'Search posts...'
 }: SearchFormProps) {
   const [search, setSearch] = useState(initialSearch);
   const [isInitialMount, setIsInitialMount] = useState(true);
@@ -50,7 +52,7 @@ function SearchFormComponent({
       <div className="relative flex-1">
         <input
           type="text"
-          placeholder="Search posts..."
+          placeholder={placeholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full px-4 py-2 pl-10 text-sm border rounded-lg dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"

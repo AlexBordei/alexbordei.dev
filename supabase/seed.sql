@@ -133,4 +133,58 @@ CREATE TABLE blog_posts (
         'published',
         3,
         'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
-    ); 
+    );
+
+-- Insert additional projects
+INSERT INTO projects (
+  title,
+  description,
+  long_description,
+  technologies,
+  image_url,
+  github_url,
+  live_url,
+  featured,
+  category
+) VALUES (
+  'Financial Analytics Dashboard',
+  'Data visualization tool for financial metrics with predictive analytics capabilities.',
+  'A comprehensive dashboard that helps businesses track and analyze their financial metrics. It integrates with various accounting systems and provides real-time data visualization, trend analysis, and predictive forecasting.',
+  ARRAY['Vue.js', 'Flask', 'D3.js', 'PostgreSQL', 'Docker'],
+  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=3000&auto=format&fit=crop',
+  'https://github.com/alexbordei/finance-analytics',
+  'https://example.com/finance-analytics',
+  true,
+  (SELECT id FROM project_categories WHERE name = 'Data Visualization')
+), (
+  'Health & Fitness Tracker',
+  'Mobile app for tracking workouts, nutrition, and health metrics with AI-powered recommendations.',
+  'A comprehensive mobile application that helps users track their fitness activities, nutrition intake, and health metrics. It provides AI-powered recommendations for workout routines and meal plans based on user goals and progress.',
+  ARRAY['React Native', 'Node.js', 'TensorFlow', 'MongoDB', 'AWS'],
+  'https://images.unsplash.com/photo-1461773518188-b3e86f98242f?q=80&w=3000&auto=format&fit=crop',
+  'https://github.com/alexbordei/health-tracker',
+  'https://example.com/health-tracker',
+  false,
+  (SELECT id FROM project_categories WHERE name = 'Mobile')
+), (
+  'Content Management System',
+  'Headless CMS with API-first approach for managing digital content across multiple platforms.',
+  'A modern headless CMS that provides a flexible and scalable solution for managing digital content. It follows an API-first approach, allowing content to be delivered to any platform or device through RESTful APIs.',
+  ARRAY['Next.js', 'GraphQL', 'Node.js', 'PostgreSQL', 'Redis'],
+  'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=3000&auto=format&fit=crop',
+  'https://github.com/alexbordei/headless-cms',
+  'https://example.com/cms',
+  true,
+  (SELECT id FROM project_categories WHERE name = 'Web Development')
+), (
+  'DevOps Pipeline Automation',
+  'Automated CI/CD pipeline with infrastructure as code and monitoring.',
+  'A comprehensive DevOps solution that automates the entire software delivery pipeline. Features include infrastructure as code, automated testing, continuous deployment, and real-time monitoring with alerts.',
+  ARRAY['Terraform', 'Kubernetes', 'Jenkins', 'Prometheus', 'Grafana'],
+  'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=3000&auto=format&fit=crop',
+  'https://github.com/alexbordei/devops-automation',
+  'https://example.com/devops',
+  false,
+  (SELECT id FROM project_categories WHERE name = 'DevOps')
+)
+ON CONFLICT DO NOTHING; 

@@ -1,174 +1,181 @@
-import Link from 'next/link';
-import { FiExternalLink, FiGithub } from 'react-icons/fi';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { FiGithub, FiExternalLink } from 'react-icons/fi';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { projectService } from '@/lib/services/projects';
+import { ProjectLoader } from '@/components/projects/ProjectLoader';
+import { SearchForm } from '@/components/projects/SearchForm';
+import type { Project } from '@/lib/services/projects';
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 export default function Projects() {
-  const projects = [
-    {
-      id: 1,
-      title: "AI-Powered CRM System",
-      description: "A customer relationship management system with integrated AI for better insights and automation.",
-      longDescription: "This CRM system uses machine learning algorithms to analyze customer data and provide actionable insights. Features include automated customer segmentation, predictive analytics for sales forecasting, and intelligent task prioritization.",
-      technologies: ["React", "Node.js", "TensorFlow", "MongoDB", "AWS"],
-      image: "/images/projects/project-1.jpg",
-      links: {
-        live: "https://example.com/crm",
-        github: "https://github.com/alexbordei/ai-crm"
-      },
-      featured: true
-    },
-    {
-      id: 2,
-      title: "Tech Education Platform",
-      description: "Online learning platform focused on programming and AI, with interactive courses and community features.",
-      longDescription: "A comprehensive learning platform that offers courses on programming, AI, and data science. Features include interactive coding exercises, progress tracking, community forums, and personalized learning paths.",
-      technologies: ["Next.js", "Python", "Docker", "Firebase", "TailwindCSS"],
-      image: "/images/projects/project-2.jpg",
-      links: {
-        live: "https://example.com/edutech",
-        github: "https://github.com/alexbordei/tech-education"
-      },
-      featured: true
-    },
-    {
-      id: 3,
-      title: "Smart Home Management System",
-      description: "IoT solution for monitoring and controlling home devices with voice commands and automation rules.",
-      longDescription: "An integrated system that connects various IoT devices in a home environment. It provides a unified interface for monitoring and controlling devices, with support for voice commands, automation rules, and energy usage optimization.",
-      technologies: ["React Native", "Node.js", "MQTT", "MongoDB", "TensorFlow Lite"],
-      image: "/images/projects/project-3.jpg",
-      links: {
-        live: "https://example.com/smarthome",
-        github: "https://github.com/alexbordei/smart-home"
-      },
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Financial Analytics Dashboard",
-      description: "Data visualization tool for financial metrics with predictive analytics capabilities.",
-      longDescription: "A comprehensive dashboard that helps businesses track and analyze their financial metrics. It integrates with various accounting systems and provides real-time data visualization, trend analysis, and predictive forecasting.",
-      technologies: ["Vue.js", "Flask", "D3.js", "PostgreSQL", "Docker"],
-      image: "/images/projects/project-4.jpg",
-      links: {
-        live: "https://example.com/finance-analytics",
-        github: "https://github.com/alexbordei/finance-analytics"
-      },
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Health & Fitness Tracker",
-      description: "Mobile app for tracking workouts, nutrition, and health metrics with AI-powered recommendations.",
-      longDescription: "A comprehensive mobile application that helps users track their fitness activities, nutrition intake, and health metrics. It provides AI-powered recommendations for workout routines and meal plans based on user goals and progress.",
-      technologies: ["React Native", "Node.js", "TensorFlow", "MongoDB", "AWS"],
-      image: "/images/projects/project-5.jpg",
-      links: {
-        live: "https://example.com/health-tracker",
-        github: "https://github.com/alexbordei/health-tracker"
-      },
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Content Management System",
-      description: "Headless CMS with API-first approach for managing digital content across multiple platforms.",
-      longDescription: "A modern headless CMS that provides a flexible and scalable solution for managing digital content. It follows an API-first approach, allowing content to be delivered to any platform or device through RESTful APIs.",
-      technologies: ["Next.js", "GraphQL", "Node.js", "PostgreSQL", "Redis"],
-      image: "/images/projects/project-6.jpg",
-      links: {
-        live: "https://example.com/cms",
-        github: "https://github.com/alexbordei/headless-cms"
-      },
-      featured: false
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    try {
+      const category = searchParams.get('category') || '';
+      const search = searchParams.get('search') || '';
+      setSelectedCategory(category);
+      setSearchQuery(search);
+
+      const { projects } = await projectService.getProjects({ category, search });
+      setProjects(projects || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
-  
-  const categories = ["All", "Web Development", "Mobile", "AI", "IoT", "Data Visualization"];
+  }, [searchParams]);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const categories = await projectService.getCategories();
+      setCategories(categories || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+    fetchCategories();
+  }, [fetchProjects, fetchCategories]);
+
+  const updateURL = useCallback((category: string, search: string) => {
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (search) params.set('search', search);
+    router.push(`/projects${params.toString() ? `?${params.toString()}` : ''}`);
+  }, [router]);
+
+  const handleCategoryClick = useCallback((category: string) => {
+    setSelectedCategory(category);
+    setSearchQuery('');
+    updateURL(category, '');
+  }, [updateURL]);
+
+  const handleSearch = useCallback((search: string) => {
+    setSearchQuery(search);
+    setSelectedCategory('');
+    updateURL('', search);
+  }, [updateURL]);
 
   return (
-    <div className="container py-12">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold mb-6">Projects</h1>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-12 max-w-3xl">
-          Here are some of the projects I've worked on, showcasing my expertise in software development, AI integration, and digital solutions.
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Projects</h1>
+        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Explore my portfolio of projects spanning web development, mobile apps, and more.
+          Each project showcases different technologies and solutions to real-world problems.
         </p>
+      </div>
 
-        {/* Categories filter */}
-        <div className="mb-10 overflow-x-auto pb-2">
-          <div className="flex gap-3">
-            {categories.map((category) => (
-              <button
-                key={category}
-                className="px-4 py-2 text-sm font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 whitespace-nowrap"
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+      <div className="mb-8">
+        <div className="flex flex-wrap gap-4 justify-center mb-6">
+          <button
+            onClick={() => handleCategoryClick('')}
+            className={`px-4 py-2 rounded-full transition-all ${
+              selectedCategory === ''
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            All
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryClick(category.name)}
+              className={`px-4 py-2 rounded-full transition-all ${
+                selectedCategory === category.name
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="max-w-md mx-auto mb-8">
+          <SearchForm
+            initialSearch={searchQuery}
+            onSearch={handleSearch}
+            placeholder="Search projects..."
+          />
+        </div>
+      </div>
+
+      {loading ? (
+        <ProjectLoader />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
           {projects.map((project) => (
-            <div 
-              key={project.id} 
+            <div
+              key={project.id}
               className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="aspect-video relative bg-gray-100 dark:bg-gray-700">
-                {/* Placeholder for project image */}
-                <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  Project Image Placeholder
+              {project.image_url && (
+                <div className="aspect-video bg-gray-100 dark:bg-gray-900">
+                  <img
+                    src={project.image_url}
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              </div>
+              )}
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{project.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {project.description}
+                </p>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies.slice(0, 3).map((tech, index) => (
-                    <span 
-                      key={index} 
-                      className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-sm px-3 py-1 rounded-full"
+                  {project.technologies?.map((tech, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm"
                     >
                       {tech}
                     </span>
                   ))}
-                  {project.technologies.length > 3 && (
-                    <span className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-sm px-3 py-1 rounded-full">
-                      +{project.technologies.length - 3} more
-                    </span>
-                  )}
                 </div>
                 
                 <div className="flex items-center justify-between mt-4">
-                  <Link 
-                    href={`/projects/${project.id}`} 
-                    className="text-blue-600 dark:text-blue-500 font-medium hover:underline"
-                  >
-                    View details
-                  </Link>
-                  
-                  <div className="flex items-center gap-3">
-                    {project.links.github && (
-                      <a 
-                        href={project.links.github} 
-                        target="_blank" 
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {project.category}
+                  </span>
+                  <div className="flex gap-3">
+                    {project.github_url && (
+                      <a
+                        href={project.github_url}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                        aria-label="GitHub repository"
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                       >
-                        <FiGithub className="h-5 w-5" />
+                        <FiGithub size={20} />
                       </a>
                     )}
-                    {project.links.live && (
-                      <a 
-                        href={project.links.live} 
-                        target="_blank" 
+                    {project.live_url && (
+                      <a
+                        href={project.live_url}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                        aria-label="Live demo"
+                        className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                       >
-                        <FiExternalLink className="h-5 w-5" />
+                        <FiExternalLink size={20} />
                       </a>
                     )}
                   </div>
@@ -177,7 +184,7 @@ export default function Projects() {
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 } 
