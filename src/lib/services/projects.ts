@@ -17,6 +17,7 @@ export interface Project {
 
 interface GetProjectsParams {
   category?: string;
+  technology?: string;
   search?: string;
   featured?: boolean;
   page?: number;
@@ -26,6 +27,7 @@ interface GetProjectsParams {
 export const projectService = {
   async getProjects({ 
     category,
+    technology,
     search,
     featured,
     page = 1,
@@ -34,10 +36,19 @@ export const projectService = {
     try {
       let query = supabase
         .from('projects')
-        .select('*', { count: 'exact' });
+        .select(`
+          *,
+          project_categories (
+            name
+          )
+        `, { count: 'exact' });
 
-      if (category && category !== 'All') {
-        query = query.eq('category', category);
+      if (category) {
+        query = query.eq('project_categories.name', category);
+      }
+
+      if (technology) {
+        query = query.contains('technologies', [technology]);
       }
 
       if (search) {
@@ -52,11 +63,16 @@ export const projectService = {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const { data: projects, count, error } = await query
+      const { data, count, error } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
+
+      const projects = data?.map(project => ({
+        ...project,
+        category: project.project_categories?.name
+      }));
 
       const totalPages = count ? Math.ceil(count / limit) : 0;
 
@@ -81,6 +97,26 @@ export const projectService = {
       return categories;
     } catch (error) {
       console.error('Error fetching project categories:', error);
+      throw error;
+    }
+  },
+
+  async getTechnologies() {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('technologies');
+
+      if (error) throw error;
+
+      // Flatten and deduplicate technologies
+      const technologies = [...new Set(
+        data?.flatMap(project => project.technologies || [])
+      )].sort();
+
+      return technologies;
+    } catch (error) {
+      console.error('Error fetching project technologies:', error);
       throw error;
     }
   }
