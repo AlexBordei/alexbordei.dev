@@ -20,6 +20,48 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            'code::before': {
+              content: '""'
+            },
+            'code::after': {
+              content: '""'
+            },
+            'blockquote p:first-of-type::before': {
+              content: '""'
+            },
+            'blockquote p:last-of-type::after': {
+              content: '""'
+            },
+            img: {
+              borderRadius: '0.5rem'
+            },
+            pre: {
+              backgroundColor: '#1e293b',
+              color: '#e2e8f0',
+              borderRadius: '0.5rem'
+            },
+            code: {
+              backgroundColor: '#1e293b',
+              color: '#e2e8f0',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '0.25rem',
+              fontWeight: '400'
+            }
+          },
+        },
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        }
+      },
+      animation: {
+        'fade-in': 'fade-in 0.5s ease-in-out forwards'
+      }
     },
     container: {
       center: true,
@@ -39,7 +81,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [
+    require("@tailwindcss/typography"),
+  ],
 };
 
 export default config; 
