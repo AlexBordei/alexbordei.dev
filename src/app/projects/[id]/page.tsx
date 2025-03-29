@@ -121,7 +121,7 @@ export default function ProjectPage() {
           {project.technologies?.map((tech, index) => (
             <span
               key={index}
-              className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm"
+              className="px-3 py-1 text-sm bg-gray-700/50 hover:bg-gray-700/70 rounded-full transition-colors"
             >
               {tech}
             </span>
