@@ -1,8 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiArrowRight, FiCode, FiCpu, FiTrendingUp } from 'react-icons/fi';
+import { FiArrowRight, FiCode, FiCpu, FiTrendingUp, FiClock, FiTag } from 'react-icons/fi';
+import { blogService } from '@/lib/services/blog';
+import { type BlogPost } from '@/lib/supabase';
 
-export default function Home() {
+export default async function Home() {
+  const posts = await blogService.getRecentPosts(3);
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -30,6 +34,87 @@ export default function Home() {
                 Get in Touch
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Articles Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Latest Articles
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Recent thoughts and insights about software development
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post: BlogPost) => (
+              <Link
+                key={post.id}
+                href={`/blog/${post.slug}`}
+                className="group bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full"
+              >
+                {post.featured_image ? (
+                  <div className="relative w-full pt-[56.25%]">
+                    <Image
+                      src={`${post.featured_image.split('?')[0]}?fm=jpg&q=60&w=800&ixlib=rb-4.0.3`}
+                      alt={post.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      priority
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="relative w-full pt-[56.25%] bg-gray-100 dark:bg-gray-700">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-gray-400 dark:text-gray-500">
+                        <FiCode className="w-12 h-12" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    <FiClock className="mr-1" />
+                    <span>{post.reading_time}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 flex-1">
+                    {post.excerpt}
+                  </p>
+                  {post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.slice(0, 3).map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        >
+                          <FiTag className="mr-1" />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/blog"
+              className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            >
+              View All Articles
+              <FiArrowRight className="ml-2" />
+            </Link>
           </div>
         </div>
       </section>
