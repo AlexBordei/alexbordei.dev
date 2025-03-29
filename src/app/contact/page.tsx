@@ -1,49 +1,59 @@
 "use client";
 
 import { useState } from 'react';
-import { FiMail, FiGithub, FiLinkedin, FiYoutube, FiMapPin, FiSend } from 'react-icons/fi';
-import { SiTiktok } from 'react-icons/si';
+import { FiGithub, FiLinkedin, FiYoutube } from 'react-icons/fi';
+import { SiTiktok, SiX } from 'react-icons/si';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError('');
-    
+    setStatus('loading');
+    setErrorMessage('');
+
     try {
-      // In a real implementation, you would send the form data to your backend
-      // await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (err) {
-      setError('There was an error sending your message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      setStatus('success');
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send message');
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -56,7 +66,7 @@ export default function Contact() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="md:col-span-2">
-            {submitted ? (
+            {status === 'success' ? (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-lg p-6 mb-6">
                 <h3 className="text-xl font-semibold text-green-800 dark:text-green-400 mb-2">Message Sent!</h3>
                 <p className="text-green-700 dark:text-green-300">
@@ -65,58 +75,51 @@ export default function Contact() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">
-                      Your Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
-                
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium mb-2">
                     Subject
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="Project Inquiry">Project Inquiry</option>
-                    <option value="Job Opportunity">Job Opportunity</option>
-                    <option value="Speaking Engagement">Speaking Engagement</option>
-                    <option value="General Question">General Question</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
-                
+
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium mb-2">
                     Message
@@ -124,111 +127,97 @@ export default function Contact() {
                   <textarea
                     id="message"
                     name="message"
-                    rows={6}
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  ></textarea>
+                    rows={6}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
 
-                {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg p-4 text-red-700 dark:text-red-300">
-                    {error}
+                {status === 'error' && (
+                  <div className="text-red-600 dark:text-red-400">
+                    {errorMessage || 'Something went wrong. Please try again.'}
                   </div>
                 )}
-                
+
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium inline-flex items-center gap-2 transition-colors disabled:opacity-70"
+                  disabled={status === 'loading'}
+                  className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? (
-                    <>Sending...</>
-                  ) : (
-                    <>
-                      Send Message
-                      <FiSend className="h-4 w-4" />
-                    </>
-                  )}
+                  {status === 'loading' ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             )}
           </div>
-          
-          <div>
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-6">Contact Information</h2>
-              
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    <FiMail className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Email</h3>
-                    <a 
-                      href="mailto:hello@alexbordei.dev" 
-                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-500"
-                    >
-                      hello@alexbordei.dev
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    <FiMapPin className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Location</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Bucharest, Romania
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium mb-3">Connect With Me</h3>
-                <div className="flex gap-4">
-                  <a
-                    href="https://github.com/alexbordei"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    aria-label="GitHub"
-                  >
-                    <FiGithub className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="https://linkedin.com/in/alexbordei"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    aria-label="LinkedIn"
-                  >
-                    <FiLinkedin className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="https://youtube.com/@alexbordei"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    aria-label="YouTube"
-                  >
-                    <FiYoutube className="h-5 w-5" />
-                  </a>
-                  <a
-                    href="https://tiktok.com/@alexbordei"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    aria-label="TikTok"
-                  >
-                    <SiTiktok className="h-5 w-5" />
-                  </a>
-                </div>
+
+          <div className="space-y-8">
+            <div>
+              <h3 className="font-medium mb-3">Location</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Bucharest, Romania
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-3">Email</h3>
+              <a
+                href="mailto:contact@alexbordei.dev"
+                className="text-blue-600 dark:text-blue-500 hover:text-blue-700 dark:hover:text-blue-400"
+              >
+                contact@alexbordei.dev
+              </a>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-3">Connect With Me</h3>
+              <div className="flex gap-4">
+                <a
+                  href="https://github.com/alexbordei"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-label="GitHub"
+                >
+                  <FiGithub className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://linkedin.com/in/alexbordei"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-label="LinkedIn"
+                >
+                  <FiLinkedin className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://x.com/abordei"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-label="X (Twitter)"
+                >
+                  <SiX className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://youtube.com/@alexbordei"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-label="YouTube"
+                >
+                  <FiYoutube className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://tiktok.com/@alexandrubordei3"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  aria-label="TikTok"
+                >
+                  <SiTiktok className="h-5 w-5" />
+                </a>
               </div>
             </div>
           </div>
